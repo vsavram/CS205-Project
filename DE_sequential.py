@@ -22,8 +22,8 @@ def DE(exp_data, clusters, metadata):
         cluster_metadata = metadata.loc[clusters == clust,:]
         
         # Determine the data associated with the COVID group and healthy group
-        covid_group = cluster_exp.loc[metadata['Sample Characteristic[disease]'] == 'COVID-19',:]
-        healthy_group = cluster_exp.loc[metadata['Sample Characteristic[disease]'] == 'normal',:]
+        covid_group = cluster_exp.loc[(cluster_metadata['Sample Characteristic[disease]'] == 'COVID-19').to_numpy(),:]
+        healthy_group = cluster_exp.loc[(cluster_metadata['Sample Characteristic[disease]'] == 'normal').to_numpy(),:]
         
         # Create lists used to store the log2 fold changes and p-values associated with each gene
         log_FC_list,p_val_list = [],[]
@@ -31,13 +31,13 @@ def DE(exp_data, clusters, metadata):
         for gene in cluster_exp.columns:
             
             # Compute the log2 fold change
-            log_FC = np.log2(np.mean(covid_group[gene], healthy_group[gene]))
+            log_FC = np.log2(np.mean(covid_group[gene])/np.mean(healthy_group[gene]))
             log_FC_list.append(log_FC)
             # Perform a Wilcoxon rank sum test and pull the p-value
             p_val = ranksums(covid_group[gene], healthy_group[gene])
             p_val_list.append(p_val)
             
-        cluser_df = pd.DataFrame({'gene': exp_data.columns,
+        cluster_df = pd.DataFrame({'gene': exp_data.columns,
                                   'logFC': log_FC_list,
                                   'p_val': p_val_list})    
         cluster_df.to_csv("./differential_expression/cluster" + str(clust) + ".csv")

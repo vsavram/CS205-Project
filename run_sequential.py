@@ -45,10 +45,10 @@ if __name__ == "__main__":
     
     # Import the raw expression data and the metadata
     exp_data = pd.read_csv(opts.raw_data_path, index_col=0)
-    metadata = pd.read_table(opts.metadata_path)
+    metadata = pd.read_csv(opts.metadata_path)
     metadata = metadata[['Assay', 'Sample Characteristic[disease]']]
     # Import the gene lengths
-    gene_lengths = pd.read_csv(opts.gene_length_path)['gene length'].to_numpy()
+    gene_lengths = pd.read_csv(opts.gene_length_path)['gene length']
     
     start_time = time.time()
     
