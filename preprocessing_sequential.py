@@ -9,7 +9,7 @@ import pandas as pd
 # Remove lowly expressed genes
 #---------------------------------------------------------------------------------------------------
 
-def remove_lowly_expressed(raw_exp, perc_zero):
+def remove_lowly_expressed(raw_exp, perc_zero, gene_lengths):
     # Determine lowly expressed genes (not expressed in over a given percentage of samples)
     lowly_expressed = []
     cutoff = perc_zero*raw_exp.shape[1]
@@ -23,8 +23,9 @@ def remove_lowly_expressed(raw_exp, perc_zero):
         
     # Remove lowly expressed genes
     raw_exp = raw_exp.loc[:,~np.array(lowly_expressed)]
+    gene_lengths = gene_lengths[~np.array(lowly_expressed)]
     
-    return raw_exp   
+    return raw_exp,gene_lengths
 
 #---------------------------------------------------------------------------------------------------
 # Perform gene length normalization and sequencing depth normalization

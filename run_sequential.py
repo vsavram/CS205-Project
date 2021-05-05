@@ -53,7 +53,7 @@ if __name__ == "__main__":
     start_time = time.time()
     
     # Preprocess the raw data
-    exp_data = remove_lowly_expressed(exp_data, opts.perc_zero)
+    exp_data,gene_lengths = remove_lowly_expressed(exp_data, opts.perc_zero, gene_lengths)
     exp_data = gene_length_norm(exp_data, gene_lengths)
     exp_data = sequencing_depth_norm(exp_data)
     exp_data = log_transform(exp_data)
