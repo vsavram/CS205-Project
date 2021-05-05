@@ -8,25 +8,26 @@ import time
 from preprocessing_sequential import *
 from clustering_sequential import *
 from create_tsne import *
+from DE_sequential import DE
 
 
 def get_options(args=None):
     parser = argparse.ArgumentParser(description="Sequential Execution")
 
     # Define the arguments for specifying the data location
-    parser.add_argument('raw_data_path' ,'--raw_data_path', type=str, 
+    parser.add_argument('--raw_data_path', type=str, 
                         default='../data/raw_files/covid_filtered_counts.csv', 
                         help='Path to raw expression data')
-    parser.add_argument('metadata_path' ,'--metadata_path', type=str, 
+    parser.add_argument('--metadata_path', type=str, 
                     default='../data/metadata.tsv', 
                     help='Path to metadata')
 
     # Define an argument that specifies the threshold for removing lowly expressed genes
-    parser.add_argument('perc_zero' ,'--perc_zero', type=float, default=0.95, 
+    parser.add_argument('--perc_zero', type=float, default=0.95, 
                         help='Threshold for removing lowly expressed genes')
     
     # Define an argument that specifies the type of clustering
-    parser.add_argument('clustering' ,'--clustering', type=str, default='kmeans', 
+    parser.add_argument('--clustering', type=str, default='kmeans', 
                         help='The type of clustering [kmeans, louvain]')
 
     opts = parser.parse_args(args)
@@ -40,7 +41,7 @@ if __name__ == "__main__":
     opts = get_options()
     
     # Import the raw expression data and the metadata
-    exp_data = pd.read_csv(opts.exp_path)
+    exp_data = pd.read_csv(opts.raw_data_path)
     metadata = pd.read_table(opts.metadata_path)
     metadata = metadata[['Assay', 'Sample Characteristic[disease]']]
     

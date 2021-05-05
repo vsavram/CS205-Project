@@ -3,13 +3,17 @@
 
 import numpy as np
 import pandas as pd
-import scipy.stats import ranksums
-
+from scipy.stats import ranksums
+import os
 
 def DE(exp_data, clusters, metadata):
     
     clusters = np.array(clusters).flatten()
     
+    # Create the directory used to store the differential expression results if it does not exist
+    if not os.path.exists('differential_expression'):
+        os.makedirs('differential_expression')
+        
     # Iterate over every cluster
     for clust in np.unique(clusters):
         

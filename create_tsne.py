@@ -4,7 +4,6 @@
 import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
-import seaborn as sns
 import scprep
 from sklearn.manifold import TSNE
 
@@ -22,7 +21,7 @@ def create_tsne(exp_data, clusters):
     sc_tsne = sc_tsne.groupby(clusters)  # Group cells by cluster
     fig, axes = plt.subplots()
     for key, group in sc_tsne:
-        group.plot(ax = axes, kind = 'scatter', x = 0, y = 1, label = key, color = clust_colors_dict[key], s = 1, alpha = 0.5)
+        group.plot(ax = axes, kind = 'scatter', x = 0, y = 1, label = key, s = 1, alpha = 0.5)
     axes.set_xlabel("TSNE-1", fontsize = 14)
     axes.set_ylabel("TSNE-2", fontsize = 14)
     axes.set_title("TSNE", fontsize = 16)

@@ -3,15 +3,6 @@
 
 import numpy as np
 import pandas as pd
-import matplotlib.pyplot as plt
-import seaborn as sns
-import os
-from scipy.io import mmread
-
-
-# Import the expression data and the metadata
-raw_exp = pd.read_csv("./Data/covid_filtered_counts.csv")
-metadata = pd.read_table("./Data/metadata.tsv")
 
 
 #---------------------------------------------------------------------------------------------------
