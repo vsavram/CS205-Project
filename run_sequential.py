@@ -21,6 +21,9 @@ def get_options(args=None):
     parser.add_argument('--metadata_path', type=str, 
                     default='../data/metadata.tsv', 
                     help='Path to metadata')
+    parser.add_argument('--gene_length_path', type=str, 
+                default='../data/gene_lengths.csv', 
+                help='Path to the gene lengths')
 
     # Define an argument that specifies the threshold for removing lowly expressed genes
     parser.add_argument('--perc_zero', type=float, default=0.95, 
@@ -44,6 +47,8 @@ if __name__ == "__main__":
     exp_data = pd.read_csv(opts.raw_data_path)
     metadata = pd.read_table(opts.metadata_path)
     metadata = metadata[['Assay', 'Sample Characteristic[disease]']]
+    # Import the gene lengths
+    gene_lengths = pd.read_csv(opts.gene_length_path)['gene length'].to_numpy()
     
     start_time = time.time()
     
