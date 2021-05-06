@@ -63,16 +63,19 @@ def K_Means_parallel(data, comm, rank, mpi_size, k=2, tol=0.001, max_iter=300):
         
         #if i == max_iter-1:
         #    print('rank: ',rank,len(classifications[0]),len(classifications[1]))
-        print(classifications.keys())
         classifications = comm.gather(classifications, root = 0)
 
         if rank == 0:
-            
             #recreate classifications dict from gathered processes
             new_cls = {}
             for key in classifications[0].keys():
-                print(list(d[key] for d in classifications))
-                new_cls[key] = np.concatenate(list(d[key] for d in classifications),axis=0)
+                d_list = []
+                for d in classifications:
+                    d_list.append(d[key])
+                try:
+                    new_cls[key] = np.concatenate(d_list,axis=0)
+                except:
+                    new_cls[key] = np.array(d_list[1]) # maybe?
            
             classifications = new_cls 
             prev_centroids = dict(centroids)
@@ -115,7 +118,7 @@ if __name__ == "__main__":
     exp_data.drop(['Unnamed: 0.1'],axis=1,inplace=True)
 
     start_time = time.time()
-    centroids, classifications = K_Means_parallel(exp_data[exp_data.columns[0:30]].values,
+    centroids, classifications = K_Means_parallel(exp_data.values,
                                                         comm=comm,rank=rank,mpi_size=mpi_size,
                                                         k=2,max_iter=10)
     end_time = time.time()
