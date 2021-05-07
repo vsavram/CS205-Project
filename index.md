@@ -24,7 +24,7 @@ Raw single-cell data is initially preprocessed, prepping it for downstream analy
 
 ## Data
 
-The data used to assess the performance and scalability of our programming model was taken from Y. Zheng et al 2020 and can be found [here](https://www.ncbi.nlm.nih.gov/pmc/articles/PMC7417788/). Samples are taken from human blood. The dataset is advantageous to work with because human blood is comprised of a diverse set of immune cells, many of which are well documented. We show that our programming model handles a heterogenous dataset as is typically found when working with single-cell data. The dataset is in tabular form, spanning 30,000 cells (rows) and 20,896 genes (columns). Samples were taken from patients who were infected with COVID-19 and from healthy donors. 
+The data used to assess the performance and scalability of our programming model was taken from Y. Zheng et al 2020 and can be found [here](https://www.ncbi.nlm.nih.gov/pmc/articles/PMC7417788/). Samples are taken from human blood. The dataset is advantageous to work with because human blood is comprised of a diverse set of immune cells, many of which are well documented. We show that our programming model handles a heterogenous dataset as is typically found when working with single-cell data. The dataset is in tabular form, spanning 30,000 cells (rows) and 20,896 genes (columns). Samples were taken from patients who were infected with COVID-19 and from healthy donors. Associated data files include the cell metadata, indicating whether a given cell came from a COVID-19 infected patient or from a healthy donor, and a file containing the gene lengths for the 20,896 genes. 
 
 ## Hybrid Parallelization Programming Model
 
@@ -34,11 +34,46 @@ All implementations are built in Python.
 
 ### Big Data Flow Preprocessing with Spark
 
-The Spark programming model is used to optimize data preprocessing. Specifically, PySpark is used in order convert the expression matrix into a resilient distributed dataset (RDD) that can be partitioned across multiple nodes. The preprocessing stage is broken down into column-wise operations and row-wise operations. Given an expression matrix of cells by genes, the columns are initially filtered, removing genes that are not expressed in a large proportion of cells (the user specifies this proportion). Subsequently, every column is divided by the length of the corresponding gene (length in kilobases) in order to make the data comparable across genes. Every row is divided by the summation of the given row (i.e. the sequencing depth) making the data comparable across cells. Lastly, the expression data is multiplied by 1e6 and log-transformed with an initial addition of 1 in order to adjust for outliers. 
+The Spark programming model is used to optimize data preprocessing. Specifically, PySpark is used in order convert the expression matrix into a resilient distributed dataset (RDD) that can be partitioned across multiple nodes. The preprocessing stage is broken down into column-wise operations and row-wise operations. 
 <img align="right" src="https://user-images.githubusercontent.com/29682604/117394283-e2b06980-aec3-11eb-8001-44dafa8edc51.png">
-
+Given an expression matrix of cells by genes, the columns are initially filtered, removing genes that are not expressed in a large proportion of cells (the user specifies this proportion). Subsequently, every column is divided by the length of the corresponding gene (length in kilobases) in order to make the data comparable across genes. Every row is divided by the summation of the given row (i.e. the sequencing depth) making the data comparable across cells. Lastly, the expression data is multiplied by 1e6 and log-transformed with an initial addition of 1 in order to adjust for outliers. 
 
 ### Cell Clustering with MPI
 
 ### Differential Expression Analysis with MPI
 
+## Runing the Model and Reproducibility Information
+
+The following sections provide information regarding how to run the sequential and parallel implementations as well as information on how to reproduce the performance results. Implementations were developed in Python and run using an AWS infrastructure. EC2 instances were used to perform computations and S3 was used for storage of data files.
+
+### Sequential Implementation
+
+**Reproducibility Information:** The sequential implemenation was run on an m5.2xlarge AWS instance using the AMI \textbf{Ubuntu Server 20.04 LTS (HVM), SSD Volume Type}. The linux kernel version is 5.4.0-1038-aws. The instance has 8 vCPU's, 8 cores in total (i.e. 1 core per vCPU), 32 GiB of main memory, 32 K of L1d cache memory, 32 K of L1i cache memory, 256 K of L2 cache memory, and 46080 K of L3 cache memory. The CPU clock rate is 2.3 GHz. \\
+By default, the m5.2xlarge instance has 8 G of disk space. Given that m5 intances are back by EBS, the disk space can by dynamically resized. Resizing was not needed for this execution because the 
+
+The Python version used is 2.7.17. The following dependencies are required and can be installed by running the following command.
+> $ pip install -r requirements.txt
+Dependencies:
+* matplotlib 
+* pandas 
+* numpy 
+* anndata 
+* sklearn 
+* scprep 
+* scipy 
+
+The following files must be in the same directory in order to execute the sequential implementation.
+* `run_sequential.py`
+* `preprocessing_sequential.py`
+* `clustering_sequential.py`
+* `create_tsne.py`
+* `DE_sequential.py`
+
+Sequential execution can be run using the following command where --raw_data_path specifies the path to the raw cells by genes expression matrix, --metadata_path specifies the path to the metadata file containing cell-specific metadata, and --gene_length_path specifies the path to the file containing the gene lengths.
+> $ ./run_sequential.py --raw_data_path 'Data/covid_filtered_counts_subset.csv' --metadata_path 'Data/metadata_subset.csv' --gene_length_path 'Data/gene_lengths.csv'
+
+
+The Java version used is 1.8.0\_282. \\
+The Scala version used is 2.11.12. \\
+The Python version used is 2.7.17. \\
+The Spark version used is 2.2.0 \\
