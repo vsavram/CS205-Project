@@ -28,11 +28,15 @@ The data used to assess the performance and scalability of our programming model
 
 ## Hybrid Parallelization Programming Model
 
-A hybrid parallelization scheme is used to optimize the single-cell pipeline. Big data flow processing using the Spark framework is used to optimize the preprocessing functions. The message passing interface (MPI) framework is used to optimize clustering and differential expression. The details of the programming model are outlined in the following sections.
+A hybrid parallelization scheme is used to optimize the single-cell pipeline. Big data flow processing using the Spark framework is used to optimize the preprocessing functions. The message passing interface (MPI) framework is used to optimize clustering and differential expression. Visualization using tSNE is left as a sequential implementation. The details of the programming model are outlined in the following sections.
+
+All implementations are built in Python. 
 
 ### Big Data Flow Preprocessing with Spark
 
-![Screen Shot 2021-05-06 at 11 36 03 PM](https://user-images.githubusercontent.com/29682604/117394283-e2b06980-aec3-11eb-8001-44dafa8edc51.png)
+The Spark programming model is used to optimize data preprocessing. Specifically, PySpark is used in order convert the expression matrix into a resilient distributed dataset (RDD) that can be partitioned across multiple nodes. The preprocessing stage is broken down into column-wise operations and row-wise operations. Given an expression matrix of cells by genes, the columns are initially filtered, removing genes that are not expressed in a large proportion of cells (the user specifies this proportion). Subsequently, every column is divided by the length of the corresponding gene (length in kilobases) in order to make the data comparable across genes. Every row is divided by the summation of the given row (i.e. the sequencing depth) making the data comparable across cells. Lastly, the expression data is multiplied by 1e6 and log-transformed with an initial addition of 1 in order to adjust for outliers. 
+<img align="right" src="https://user-images.githubusercontent.com/29682604/117394283-e2b06980-aec3-11eb-8001-44dafa8edc51.png">
+
 
 ### Cell Clustering with MPI
 
