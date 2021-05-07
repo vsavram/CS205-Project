@@ -52,13 +52,16 @@ By default, the m5.2xlarge instance has 8 G of disk space. Given that m5 intance
 
 The Python version used is 2.7.17. The following dependencies are required and can be installed by running the following command.
 > $ pip install -r requirements.txt
+
 Dependencies:
 * matplotlib 
 * pandas 
 * numpy 
+* argparse
 * anndata 
 * sklearn 
 * scprep 
+* scanpy
 * scipy 
 
 The following files must be in the same directory in order to execute the sequential implementation.
