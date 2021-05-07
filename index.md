@@ -34,9 +34,8 @@ All implementations are built in Python.
 
 ### Big Data Flow Preprocessing with Spark
 
-The Spark programming model is used to optimize data preprocessing. Specifically, PySpark is used in order convert the expression matrix into a resilient distributed dataset (RDD) that can be partitioned across multiple nodes. The preprocessing stage is broken down into column-wise operations and row-wise operations. 
 <img align="right" src="https://user-images.githubusercontent.com/29682604/117394283-e2b06980-aec3-11eb-8001-44dafa8edc51.png">
-Given an expression matrix of cells by genes, the columns are initially filtered, removing genes that are not expressed in a large proportion of cells (the user specifies this proportion). Subsequently, every column is divided by the length of the corresponding gene (length in kilobases) in order to make the data comparable across genes. Every row is divided by the summation of the given row (i.e. the sequencing depth) making the data comparable across cells. Lastly, the expression data is multiplied by 1e6 and log-transformed with an initial addition of 1 in order to adjust for outliers. 
+The Spark programming model is used to optimize data preprocessing. Specifically, PySpark is used in order convert the expression matrix into a resilient distributed dataset (RDD) that can be partitioned across multiple nodes. The preprocessing stage is broken down into column-wise operations and row-wise operations. Given an expression matrix of cells by genes, the columns are initially filtered, removing genes that are not expressed in a large proportion of cells (the user specifies this proportion). Subsequently, every column is divided by the length of the corresponding gene (length in kilobases) in order to make the data comparable across genes. Every row is divided by the summation of the given row (i.e. the sequencing depth) making the data comparable across cells. Lastly, the expression data is multiplied by 1e6 and log-transformed with an initial addition of 1 in order to adjust for outliers. 
 
 ### Cell Clustering with MPI
 
@@ -77,3 +76,16 @@ The Java version used is 1.8.0\_282. \\
 The Scala version used is 2.11.12. \\
 The Python version used is 2.7.17. \\
 The Spark version used is 2.2.0 \\
+
+## Performance
+
+The execution times for each module in the single-cell analysis pipeline using the sequential implementation are provided below.
+* Preprocessing execution time - 
+* Clustering with k-means execution time - 
+* tSNE visualization execution time - 
+* Differential expression analysis execution time - 
+
+We treat tSNE visualization as an inherently sequential portion of the code. The theoretical speedup as a function of the number of processors is based on the reported execution times for each module is provided in the following plot. 
+
+
+
