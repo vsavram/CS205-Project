@@ -1,10 +1,8 @@
-## Hybrid-Parallelism for Single-Cell Gene Expression Analyses
+# Hybrid-Parallelism for Single-Cell Gene Expression Analyses
 
-You can use the [editor on GitHub](https://github.com/vsavram/CS205-Project/edit/gh-pages/index.md) to maintain and preview the content for your website in Markdown files.
+![gene](https://user-images.githubusercontent.com/29682604/117387165-4e8bd580-aeb6-11eb-96ec-fefc0f273e3e.png)
 
-Whenever you commit to this repository, GitHub Pages will run [Jekyll](https://jekyllrb.com/) to rebuild the pages in your site, from the content in your Markdown files.
-
-### Introduction and Motivation
+## Introduction and Motivation
 
 Advances in next-generation sequencing (NGS) technology have allowed researchers to perform high-throughput sequencing at the single cell level. As opposed to bulk gene expression sequencing, single-cell sequencing generates gene expression profiles for every cell (to an extent) in a given sample. These data provide insight into the dynamics of and interactions between different cell populations as well as the discrepancies between cell populations/subpopulations across different experimental conditions. single-cell RNA sequencing (scRNA-seq) is for both rapidly generating hypotheses and for drawing biologically meaningful insights. Heavy reductions in the cost per cell across multiple sequencing platforms (e.g. 10X Genomics, SORT-seq) have made this type of data generation accesible to many labs/institutions. Furthermore, NGS data has become an intergral part of biomedical research and a complement to wet-lab experimentation. 
 
@@ -12,7 +10,14 @@ scRNA-seq data are large, typically spanning 10,000's or 100,000's of cells and 
 
 ##### The Standard Single-Cell Analysis Pipeline
 
+A standard scRNA-seq workflow involves the following steps:
+1. **Preprocessing** - Removing lowly expressed genes, performing gene length/sequencing depth normalization, and log-transforming the data.
+2. **Clustering** - Clustering cells
+3. **Visualization** - Visualizing the clusters on a dimensionality-reduced plot, typically using a non-linear dimensionality reduction technique such as tSNE or UMAP.
+4. **Cluster Annotation** - Mapping each cluster to a specific cell type (e.g. cluster 1 corresponds to macrophages).
+5. **Differential Expression Analysis** - Determining which genes in a given cluster are expressed at significantly different levels between two groups.
 
+![single_cell_pipeline](https://user-images.githubusercontent.com/29682604/117387384-d245c200-aeb6-11eb-8812-def86d7d02ee.png)
 
 ```markdown
 Syntax highlighted code block
