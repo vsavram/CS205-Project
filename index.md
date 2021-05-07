@@ -1,7 +1,6 @@
 # Hybrid-Parallelism for Single-Cell Gene Expression Analyses
-<p align="center">
-![gene](https://user-images.githubusercontent.com/29682604/117387165-4e8bd580-aeb6-11eb-96ec-fefc0f273e3e.png)
-</p>
+
+![gene](https://user-images.githubusercontent.com/29682604/117387165-4e8bd580-aeb6-11eb-96ec-fefc0f273e3e.png?style=centerme)
 
 ## Introduction and Motivation
 
