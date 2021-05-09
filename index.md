@@ -1,15 +1,19 @@
 # Hybrid-Parallelism for Single-Cell Gene Expression Analyses
+<h3 align="center">
+Contributors: John Alling, Victor Avram, Diego Zertuche
+</h3>
 <p align="center">
   <img src="https://user-images.githubusercontent.com/29682604/117387165-4e8bd580-aeb6-11eb-96ec-fefc0f273e3e.png">
 </p>
 
 ## Introduction and Motivation
+---
 
 Advances in next-generation sequencing (NGS) technology have allowed researchers to perform high-throughput sequencing at the single cell level. As opposed to bulk gene expression sequencing, single-cell sequencing generates gene expression profiles for every cell (to an extent) in a given sample. These data provide insight into the dynamics of and interactions between different cell populations as well as the discrepancies between cell populations/subpopulations across different experimental conditions. single-cell RNA sequencing (scRNA-seq) is for both rapidly generating hypotheses and for drawing biologically meaningful insights. Heavy reductions in the cost per cell across multiple sequencing platforms (e.g. 10X Genomics, SORT-seq) have made this type of data generation accesible to many labs/institutions. Furthermore, NGS data has become an intergral part of biomedical research and a complement to wet-lab experimentation. 
 
 scRNA-seq data are large, typically spanning 10,000's or 100,000's of cells and 10,000's of genes. As well, these datasets are inherently complex and are computationally intensive to analyze. The problem can be framed in the context of big data and big compute, necessitating savvy ways of handling this data. We have built a hypbrid-parallel framework that integrates into the standard single-cell analysis pipeline from data preprocessing to performing differential gene expression analysis. We outline this standard pipeline below, before discussing the programming model used to optimize these analyses.
 
-## The Standard Single-Cell Analysis Pipeline
+### The Standard Single-Cell Analysis Pipeline
 
 A standard scRNA-seq workflow involves the following steps:
 1. **Preprocessing** - Removing lowly expressed genes, performing gene length/sequencing depth normalization, and log-transforming the data.
@@ -23,10 +27,12 @@ A standard scRNA-seq workflow involves the following steps:
 Raw single-cell data is initially preprocessed, prepping it for downstream analyses. Initially, lowly expressed genes are removed. Lowly expressed genes are determined by the proportion of cells that do not express the given gene, using a pre-specified threshold (e.g. 95%). Preprocessing includes gene length normalization and sequencing depth normalization in order to make data comparable across genes and across cells. The last step of preprocessing log transforms the data with an initial small offset (typically an addition of 1). The expression data is subsequently clustered. Common approaches include $k$-means and Louvain/Leiden clustering. Ideally, cells roughly together based on cell type. Clusters are annotated using marker gene expression levels. Marker genes are gene that are exclusively (ideally) expressed in one or a few cell types. Cluster annotation assigns a cell type to each cluster. For example, cluster 1 might be identified as macrophages and cluset 2 might be identified as neutrophils. If samples are derived from different experimental conditions, the last step in the standard single-cell analysis pipeline compares the expression levels across groups. Differential expression analysis determines which genes are expressed at significantly different levels between two groups. 
 
 ## Data
+---
 
 The data used to assess the performance and scalability of our programming model was taken from Y. Zheng et al 2020 and can be found [here](https://www.ncbi.nlm.nih.gov/pmc/articles/PMC7417788/). Samples are taken from human blood. The dataset is advantageous to work with because human blood is comprised of a diverse set of immune cells, many of which are well documented. We show that our programming model handles a heterogenous dataset as is typically found when working with single-cell data. The dataset is in tabular form, spanning 30,000 cells (rows) and 20,896 genes (columns). Samples were taken from patients who were infected with COVID-19 and from healthy donors. Associated data files include the cell metadata, indicating whether a given cell came from a COVID-19 infected patient or from a healthy donor, and a file containing the gene lengths for the 20,896 genes. 
 
 ## Hybrid Parallelization Programming Model
+---
 
 A hybrid parallelization scheme is used to optimize the single-cell pipeline. Big data flow processing using the Spark framework is used to optimize the preprocessing functions. The message passing interface (MPI) framework is used to optimize clustering and differential expression. Visualization using tSNE is left as a sequential implementation. The details of the programming model are outlined in the following sections.
 
@@ -37,18 +43,23 @@ All implementations are built in Python.
 <img align="right" src="https://user-images.githubusercontent.com/29682604/117394283-e2b06980-aec3-11eb-8001-44dafa8edc51.png">
 The Spark programming model is used to optimize data preprocessing. Specifically, PySpark is used in order convert the expression matrix into a resilient distributed dataset (RDD) that can be partitioned across multiple nodes. The preprocessing stage is broken down into column-wise operations and row-wise operations. Given an expression matrix of cells by genes, the columns are initially filtered, removing genes that are not expressed in a large proportion of cells (the user specifies this proportion). Subsequently, every column is divided by the length of the corresponding gene (length in kilobases) in order to make the data comparable across genes. Every row is divided by the summation of the given row (i.e. the sequencing depth) making the data comparable across cells. Lastly, the expression data is multiplied by 1e6 and log-transformed with an initial addition of 1 in order to adjust for outliers. 
 
+### Preprocessing Optimization with Numba
+
+Numba is a compiler for Python that specifically works with numerical functions to accelerate computing. Numba uses the LLVM compiler architecture to perform this optimization. THe just-in-time translation of a given function (the bytecode is translated to machine code just before execution), causes improved execution speeds. Numba is used to peform this preprocessing optimzation. Furthermore, Numba is also used as a shared memory multi-threading framework, able to provide local parallelism. 
+
 ### Cell Clustering with MPI
 
 ### Differential Expression Analysis with MPI
 
 ## Runing the Model and Reproducibility Information
+---
 
 The following sections provide information regarding how to run the sequential and parallel implementations as well as information on how to reproduce the performance results. Implementations were developed in Python and run using an AWS infrastructure. EC2 instances were used to perform computations and S3 was used for storage of data files.
 
 ### Sequential Implementation
 
 **Reproducibility Information:** The sequential implemenation was run on an m5.2xlarge AWS instance using the AMI \textbf{Ubuntu Server 20.04 LTS (HVM), SSD Volume Type}. The linux kernel version is 5.4.0-1038-aws. The instance has 8 vCPU's, 8 cores in total (i.e. 1 core per vCPU), 32 GiB of main memory, 32 K of L1d cache memory, 32 K of L1i cache memory, 256 K of L2 cache memory, and 46080 K of L3 cache memory. The CPU clock rate is 2.3 GHz. \\
-By default, the m5.2xlarge instance has 8 G of disk space. Given that m5 intances are back by EBS, the disk space can by dynamically resized. Resizing was not needed for this execution because the 
+By default, the m5.2xlarge instance has 8 G of disk space. Given that m5 intances are back by EBS, the disk space can by dynamically resized. Resizing was not needed for this execution.
 
 The Python version used is 2.7.17. The following dependencies are required and can be installed by running the following command.
 > $ pip install -r requirements.txt
@@ -73,20 +84,48 @@ The following files must be in the same directory in order to execute the sequen
 
 Sequential execution can be run using the following command where --raw_data_path specifies the path to the raw cells by genes expression matrix, --metadata_path specifies the path to the metadata file containing cell-specific metadata, and --gene_length_path specifies the path to the file containing the gene lengths.
 > $ ./run_sequential.py --raw_data_path 'Data/covid_filtered_counts_subset.csv' --metadata_path 'Data/metadata_subset.csv' --gene_length_path 'Data/gene_lengths.csv'
+The execution times for each step of the preprocessing are printed to the console. The executions times are also saved to a file **sequential_execution_times.csv**.
 
+### PySpark Preprocessing
+
+**Reproducibility Information:** The PySpark implemenation of preprocessing was run on a cluster of m5.2xlarge AWS instances using the AMI \textbf{Ubuntu Server 20.04 LTS (HVM), SSD Volume Type}. The linux kernel version is 5.4.0-1038-aws. The instance has 8 vCPU's, 8 cores in total (i.e. 1 core per vCPU), 32 GiB of main memory, 32 K of L1d cache memory, 32 K of L1i cache memory, 256 K of L2 cache memory, and 46080 K of L3 cache memory. The CPU clock rate is 2.3 GHz. \\
+By default, the m5.2xlarge instance has 8 G of disk space. Given that m5 intances are back by EBS, the disk space can by dynamically resized. Resizing was not needed for this execution. \\
+Up to 8 nodes were used for this implementation. 
 
 The Java version used is 1.8.0\_282. \\
 The Scala version used is 2.11.12. \\
 The Python version used is 2.7.17. \\
 The Spark version used is 2.2.0 \\
 
+The Python version used is 2.7.17. The following dependencies are required and can be installed by running the following command.
+> $ pip install -r requirements_pyspark.txt
+
+### Numba Preprocessing
+
+**Reproducibility Information:** The shared memory Numba implementation of preprocessing was run on an m5.2xlarge AWS instance using the AMI \textbf{Ubuntu Server 20.04 LTS (HVM), SSD Volume Type}. The linux kernel version is 5.4.0-1038-aws. The instance has 8 vCPU's, 8 cores in total (i.e. 1 core per vCPU), 32 GiB of main memory, 32 K of L1d cache memory, 32 K of L1i cache memory, 256 K of L2 cache memory, and 46080 K of L3 cache memory. The CPU clock rate is 2.3 GHz. \\
+By default, the m5.2xlarge instance has 8 G of disk space. Given that m5 intances are back by EBS, the disk space can by dynamically resized. Resizing was not needed for this execution.
+
+The Python version used is 2.7.17. The following dependencies are required and can be installed by running the following command.
+> $ pip install -r requirements_numba.txt
+
+Dependencies:
+* pandas 
+* numpy 
+* argparse
+* numba 
+
+Numba preprocessing can be run using the following command where --raw_data_path specifies the path to the raw cells by genes expression matrix, --metadata_path specifies the path to the metadata file containing cell-specific metadata, and --gene_length_path specifies the path to the file containing the gene lengths.
+> $ ./preprocessing_numba.py --raw_data_path 'Data/covid_counts.csv' --metadata_path 'Data/metadata.csv' --gene_length_path 'Data/gene_lengths.csv'
+The execution time is printed to the console. 
+
 ## Performance
+---
 
 The execution times for each module in the single-cell analysis pipeline using the sequential implementation are provided below.
-* Preprocessing execution time - 
+* Preprocessing execution time - 3088.9105 s
 * Clustering with k-means execution time - 
-* tSNE visualization execution time - 
-* Differential expression analysis execution time - 
+* tSNE visualization execution time - 113.5847 s
+* Differential expression analysis execution time - 7.1552 s
 
 We treat tSNE visualization as an inherently sequential portion of the code. The theoretical speedup as a function of the number of processors is based on the reported execution times for each module is provided in the following plot. 
 
