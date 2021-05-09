@@ -84,13 +84,14 @@ The following files must be in the same directory in order to execute the sequen
 
 Sequential execution can be run using the following command where --raw_data_path specifies the path to the raw cells by genes expression matrix, --metadata_path specifies the path to the metadata file containing cell-specific metadata, and --gene_length_path specifies the path to the file containing the gene lengths.
 > $ ./run_sequential.py --raw_data_path 'Data/covid_filtered_counts_subset.csv' --metadata_path 'Data/metadata_subset.csv' --gene_length_path 'Data/gene_lengths.csv'
+
 The execution times for each step of the preprocessing are printed to the console. The executions times are also saved to a file **sequential_execution_times.csv**.
 
 ### PySpark Preprocessing
 
 **Reproducibility Information:** The PySpark implemenation of preprocessing was run on a cluster of m5.2xlarge AWS instances using the AMI \textbf{Ubuntu Server 20.04 LTS (HVM), SSD Volume Type}. The linux kernel version is 5.4.0-1038-aws. The instance has 8 vCPU's, 8 cores in total (i.e. 1 core per vCPU), 32 GiB of main memory, 32 K of L1d cache memory, 32 K of L1i cache memory, 256 K of L2 cache memory, and 46080 K of L3 cache memory. The CPU clock rate is 2.3 GHz. \\
 By default, the m5.2xlarge instance has 8 G of disk space. Given that m5 intances are back by EBS, the disk space can by dynamically resized. Resizing was not needed for this execution. \\
-Up to 8 nodes were used for this implementation. 
+Up to 8 nodes were used for this implementation. The network bandwidth is up to 10 Gbps. 
 
 The Java version used is 1.8.0\_282. \\
 The Scala version used is 2.11.12. \\
@@ -116,6 +117,7 @@ Dependencies:
 
 Numba preprocessing can be run using the following command where --raw_data_path specifies the path to the raw cells by genes expression matrix, --metadata_path specifies the path to the metadata file containing cell-specific metadata, and --gene_length_path specifies the path to the file containing the gene lengths.
 > $ ./preprocessing_numba.py --raw_data_path 'Data/covid_counts.csv' --metadata_path 'Data/metadata.csv' --gene_length_path 'Data/gene_lengths.csv'
+
 The execution time is printed to the console. 
 
 ## Performance
