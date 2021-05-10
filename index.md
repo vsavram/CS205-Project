@@ -207,7 +207,7 @@ While K-Means Clustering is capable of being run on relatively large datasets, t
 
 ![cluster_speedup](https://user-images.githubusercontent.com/70713520/117595918-0a940d00-b110-11eb-93e5-e60195ed3e18.png)
 
-Interestingly, the speedup gains as the number of nodes increases is relatively minor, maximizing at 8 nodes. The lowest speedup was actually at 2 nodes, where overall time was slower than a single node. This is likely due to the introduction of overhead communication costs between the two nodes. Aside from the 2 node case, it's interesting to see that there are "peaks" in speedup that occur when the number of nodes is a power of 2. This is possibly just a coincidence, but it's also possible splitting amongst $2^n$ nodes is inherently efficient in MPI.
+Interestingly, the speedup gains as the number of nodes increases is relatively minor, maximizing at 8 nodes. The lowest speedup was actually at 2 nodes, where overall time was slower than a single node. This is likely due to the introduction of overhead communication costs between the two nodes. Aside from the 2 node case, it's interesting to see that there are "peaks" in speedup that occur when the number of nodes is a power of 2. This is possibly just a coincidence, but it's also possible splitting amongst *2<sub>n</sub>* nodes is inherently efficient in MPI.
 
 ### Differential Expression Analysis Performance
 For the parallel execution of the Differential Expression Analysis, a varying number of nodes were tried out, from a range of two nodes (1 main and 1 worker node) to 16 nodes (1 main and 15 worker nodes). The execution time was the following:
