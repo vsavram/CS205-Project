@@ -174,10 +174,14 @@ The execution times for each module in the single-cell analysis pipeline using t
 The total execution time, not taking into account data I/O is 3505.3837 seconds (roughly 58 minutes). The run time taking into account I/O is 4001.2578 seconds (67 minutes).
 
 We treat tSNE visualization as an inherently sequential portion of the code. The proportion of the code that can be parallelized is *c* and the expression for the the theoretical speedup *S<sub>T</sub>(1,p)* as a function of the number of processors *p* as dictated by Amdahl's law is given below. 
+<p align="center">
 ![Screen Shot 2021-05-10 at 10 34 11 AM](https://user-images.githubusercontent.com/29682604/117676275-63e55600-b17b-11eb-9dad-5435fdb88fa9.png)
+</p>
 
 If taking into account I/O, the proportion of the code that can be parallelized is *c* and the expression for the the theoretical speedup *S<sub>T</sub>(1,p)* as a function of the number of processors *p* as dictated by Amdahl's law is given below. 
+<p align="center">
 ![Screen Shot 2021-05-10 at 10 36 10 AM](https://user-images.githubusercontent.com/29682604/117676459-91320400-b17b-11eb-82f6-cc8addbc4d27.png)
+</p>
 
 We see that when ignoring data I/O, we can get sizeable return in speedup up to roughly 80 processors, after which we begin to realize diminishing returns in performance. However, if data I/O is taken into account, diminishing returns are realized much more rapidly. After roughly 15 to 20 processors, the performance increases are supposedly marginal.
 
