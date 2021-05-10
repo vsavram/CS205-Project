@@ -133,16 +133,27 @@ Dependencies (all nodes):
 * scipy
 * mpi4py 
 
+
 ## Performance
 ---
 
 The execution times for each module in the single-cell analysis pipeline using the sequential implementation are provided below.
 * Preprocessing execution time - 3088.9105 s
-* Clustering with k-means execution time - 
+* Clustering with k-means execution time - 295.7333
 * tSNE visualization execution time - 113.5847 s
 * Differential expression analysis execution time - 7.1552 s
+The total execution time, not taking into account data I/O is 3505.3837 seconds (roughly 58 minutes).  
 
-We treat tSNE visualization as an inherently sequential portion of the code. The theoretical speedup as a function of the number of processors is based on the reported execution times for each module is provided in the following plot. 
+We treat tSNE visualization as an inherently sequential portion of the code. The proportion of the code that can be parallelized is $c = \frac{3088.9105 + 295.7333 + 7.1552}{3505.3837} = 0.9675. The theoretical speedup as a function of the number of processors governed by Amdahl's law is given below. 
+$$
+S_T(1,p) = \frac{1}{1 - c + c/p} = \frac{1}{0.0324 + 0.9675/p}
+$$
+![Theoretical_Speedup](https://user-images.githubusercontent.com/29682604/117592356-37432700-b106-11eb-889b-f1208dbd8096.png)
 
+### Preprocessing Performance
+
+The PySpark implementation for the preprocessing steps was not amenable for the types of operations being performed on the raw expression data. Spark (and by extension PySpark) requires data manipulation of a specific format. The preprocessing steps involve column removal, column-wise and row-wise operations, and transformations on the entire matrix. At certain points in preprocessing, the collection of data (e.g. column names or index names) is unavoidable. Collecting elements from an RDD (or PySpark Dataframe which is essentially an RDD), causes data to be sent back to the master node. Repeated data transfer inhibits PySpark's ability to be used as a viable means of big data flow preprocessing in this context.
+
+The preprocessing implemented using Numba produced large speedups. The Numba preprocessing implementation was run on an AWS m5.2xlarge instance with 8 vCPU's with an execution time of 7.6836 seconds. The Numba preprocessing implementation was also run on an AWS m5.4xlarge instance with 16 vCPU's with an execution time of 5.4418 seconds. 
 
 
