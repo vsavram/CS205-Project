@@ -34,7 +34,7 @@ The data used to assess the performance and scalability of our programming model
 ## Hybrid Parallelization Programming Model
 ---
 
-A hybrid parallelization scheme is used to optimize the single-cell pipeline. Big data flow processing using the Spark framework is used to optimize the preprocessing functions. The message passing interface (MPI) framework is used to optimize clustering and differential expression. Visualization using tSNE is left as a sequential implementation. The details of the programming model are outlined in the following sections.
+A hybrid parallelization scheme is used to optimize the single-cell pipeline. Big data flow processing using the Spark framework is used to optimize the preprocessing functions. In order to alleviate communication overhead associated with a network of nodes, Numba (a compiler for python that performs just-in-time translation of numeric functions) is used to enhance the preprocessing optimization.The message passing interface (MPI) framework is used to optimize clustering and differential expression, specifically using mpi4py. Visualization using tSNE is left as a sequential implementation. The details of the programming model are outlined in the following sections.
 
 All implementations are built in Python. 
 
@@ -49,9 +49,11 @@ Numba is a compiler for Python that specifically works with numerical functions 
 
 ### Cell Clustering with MPI
 
+Cells are grouped into clusters based on like characteristics from the preprocessing step. K-Means clustering is a common algorithm for this approach, which is parallelized using the MPI framework. The MPI programming model allows different nodes in a cluster to communicate with each other through a 'message passing interface', where data can be shared, distributed and collected throughout the different computing nodes to allow computations to be carried out to different chunks of data at different nodes, and thus achieve parallelization. An important step of K-Means is finding the L2 norm of each data point with respect to a centroid. This makes for a good opportunity for parallelization, so the data is split such that each node receives an equal portion of the data, increasing the compute throughput overall.
+
 ### Differential Expression Analysis with MPI
 
-The MPI programming model allows different nodes in a cluster to communicate with each other through a 'message passing interface', where data can be shared, distributed and collected throughout the different computing nodes to allow computations to be carried out to different chunks of data at different nodes, and thus achieve parallelization. For the differential expression analysis, a statistical analysis, in this case a rank sum test, is performed independently for each cluster of genes to determine if there is a statistical difference in gene expression in the control and study group in that particular cluster. This leads to a natural integration to the MPI programming model, where a main node will send one cluster data to each node so the rank sum tests of each cluster can be performed parallelly.
+Similarly to the cell clustering stage, the MPI framework can be applied to differential gene expression analysis. For the differential expression analysis, a statistical analysis, in this case a rank sum test, is performed independently for each cluster of genes to determine if there is a statistical difference in gene expression in the control and study group in that particular cluster. This leads to a natural integration to the MPI programming model, where a main node will send one cluster data to each node so the rank sum tests of each cluster can be performed parallelly.
 
 ## Runing the Model and Reproducibility Information
 ---
@@ -122,6 +124,21 @@ Numba preprocessing can be run using the following command where --raw_data_path
 
 The execution time is printed to the console.
 
+### Cell Clustering with MPI
+**Reproducibility Information:** The MPI cluster was set up with AWS, using 16 nodes, each with an Ubuntu Server 18.04 LTS (HVM) image, EBS General Purpose (SSD) Volume Type and the instance type m4.xlarge. This instance has 4 Intel(R) Xeon(R) CPU E5-2686 v4 @ 2.30GHz, 2 cores per socket with 2 thread per core, and a Xen hipervisor, 16 GB of disk space and cache storages of: L1d cache 32K, L1i cache 32K, L2 cache 256K, L3 cache 46080K. We are using a VPC to create the cluster and the connections made are private.
+
+The MPI version being used in all nodes is the HYDRA build 3.3a2, which is using gcc -Wl,-Bsymbolic-functions -Wl,-z,relro. The Python version used is in all nodes is 2.7.17.
+
+Dependencies (all nodes):
+* pandas 
+* numpy 
+* mpi4py
+
+To execute the parallel implementation of K-Means based cell clustering, you can use the command
+> $ mpiexec -n NUM_NODES python clustering_parallel.py
+
+where NUM_NODES is the number of nodes in the cluster that you want to utilize. The file named `clusters.csv` should be in the same directory as the `clustering_parallel.py` file.
+
 ### Differential Expression Analysis with MPI
 **Reproducibility Information:** The MPI cluster was set up with AWS, using 16 nodes, each with an Ubuntu Server 18.04 LTS (HVM) image, EBS General Purpose (SSD) Volume Type and the instance type m4.xlarge. This instance has 4 Intel(R) Xeon(R) CPU E5-2686 v4 @ 2.30GHz, 2 cores per socket with 2 thread per core, and a Xen hipervisor, 16 GB of disk space and cache storages of: L1d cache 32K, L1i cache 32K, L2 cache 256K, L3 cache 46080K. We are using a VPC to create the cluster and the connections made are private.
 
@@ -131,7 +148,12 @@ Dependencies (all nodes):
 * pandas 
 * numpy 
 * scipy
-* mpi4py 
+* mpi4py
+
+To execute the parallel implementation of the Differential Expression Analysis, you can use the command
+> $ mpiexec -n NUM_NODES python DE_parallel.py
+
+where NUM_NODES is the number of nodes in the cluster that you want to utilize. The files named `exp_data.csv`, `metadata.csv`, `clusters.csv` should be in the same directory as the `DE_parallel.py` file. To get the `exp_data.csv` and `clusters.csv` please run the sequential script `run_sequential.py` before the parallel implementation.
 
 
 ## Performance
@@ -139,21 +161,88 @@ Dependencies (all nodes):
 
 The execution times for each module in the single-cell analysis pipeline using the sequential implementation are provided below.
 * Preprocessing execution time - 3088.9105 s
-* Clustering with k-means execution time - 295.7333
+* Clustering with k-means execution time - 295.7333 s
 * tSNE visualization execution time - 113.5847 s
 * Differential expression analysis execution time - 7.1552 s
-The total execution time, not taking into account data I/O is 3505.3837 seconds (roughly 58 minutes).  
+* Data I/O - 495.8741 s
+
+The total execution time, not taking into account data I/O is 3505.3837 seconds (roughly 58 minutes). The run time taking into account I/O is 4001.2578 seconds (67 minutes).
 
 We treat tSNE visualization as an inherently sequential portion of the code. The proportion of the code that can be parallelized is $c = \frac{3088.9105 + 295.7333 + 7.1552}{3505.3837} = 0.9675. The theoretical speedup as a function of the number of processors governed by Amdahl's law is given below. 
 $$
 S_T(1,p) = \frac{1}{1 - c + c/p} = \frac{1}{0.0324 + 0.9675/p}
 $$
-![Theoretical_Speedup](https://user-images.githubusercontent.com/29682604/117592356-37432700-b106-11eb-889b-f1208dbd8096.png)
+If taking into account I/O, the proportion of code that can be parallelized is $c = \frac{3088.9105 + 295.7333 + 7.1552}{4001.2578} = 0.8476. The theoretical speedup as a function of the number of processors governed by Amdahl's law is given below.
+$$
+S_T(1,p) = \frac{1}{1 - c + c/p} = \frac{1}{0.1524 + 0.8476/p}
+$$
+![Theoretical_Speedup_with_IO](https://user-images.githubusercontent.com/29682604/117601460-78463600-b11c-11eb-9756-c81ec3b3ee6f.png)
 
 ### Preprocessing Performance
 
-The PySpark implementation for the preprocessing steps was not amenable for the types of operations being performed on the raw expression data. Spark (and by extension PySpark) requires data manipulation of a specific format. The preprocessing steps involve column removal, column-wise and row-wise operations, and transformations on the entire matrix. At certain points in preprocessing, the collection of data (e.g. column names or index names) is unavoidable. Collecting elements from an RDD (or PySpark Dataframe which is essentially an RDD), causes data to be sent back to the master node. Repeated data transfer inhibits PySpark's ability to be used as a viable means of big data flow preprocessing in this context.
+<u>PySpark:</u>
 
-The preprocessing implemented using Numba produced large speedups. The Numba preprocessing implementation was run on an AWS m5.2xlarge instance with 8 vCPU's with an execution time of 7.6836 seconds. The Numba preprocessing implementation was also run on an AWS m5.4xlarge instance with 16 vCPU's with an execution time of 5.4418 seconds. 
+The PySpark implementation for the preprocessing steps was not amenable for the types of operations being performed on the raw expression data. 
+**Challenges** Spark (and by extension PySpark) requires data manipulation of a specific format. The preprocessing steps involve column removal, column-wise and row-wise operations, and transformations on the entire matrix. At certain points in preprocessing, the collection of data represented by the method `collect()` (e.g. column names or index names) is unavoidable. Collecting elements from an RDD (or PySpark Dataframe which is a wrapped RDD), causes data to be sent back to the master node. Repeated data transfer inhibits PySpark's ability to be used as a viable means of big data flow preprocessing in this context.
+
+<u>Numba</u>
+The preprocessing implemented using Numba produced large speedups. The Numba preprocessing implementation was run on an AWS m5.2xlarge instance with 8 vCPU's with an execution time of 8.6836 seconds. The Numba preprocessing implementation was also run on an AWS m5.4xlarge instance with 16 vCPU's with an execution time of 6.4418 seconds. These execution times correspond to speedups of 356 and 480 respectively.
+**Benefits over the Spark framework** The implementation using Numba used a shared memory framework, avoiding overheads associated with data transfer and communication across nodes. 
 
 
+### Cell Clustering Performance
+
+While K-Means Clustering is capable of being run on relatively large datasets, the parallelized implementation ran into constant memory issues. This is likely a coding problem and not an algorithmic problem, as small-scale examples were able to be evaluated accurately. All attempts to run clustering on the full 30000x20000 data resulted in an `EXIT CODE: 9` error, which indicated to us that the code was using too much RAM and had to be exited. However, as a proof of concept, multiple nodes were used to evaluate a smaller version of the dataset to determine what the speedup looks like. A plot of that speedup vs. number of nodes is shown:
+
+![cluster_speedup](https://user-images.githubusercontent.com/70713520/117595918-0a940d00-b110-11eb-93e5-e60195ed3e18.png)
+
+Interestingly, the speedup gains as the number of nodes increases is relatively minor, maximizing at 8 nodes. The lowest speedup was actually at 2 nodes, where overall time was slower than a single node. This is likely due to the introduction of overhead communication costs between the two nodes. Aside from the 2 node case, it's interesting to see that there are "peaks" in speedup that occur when the number of nodes is a power of 2. This is possibly just a coincidence, but it's also possible splitting amongst $2^n$ nodes is inherently efficient in MPI.
+
+### Differential Expression Analysis Performance
+For the parallel execution of the Differential Expression Analysis, a varying number of nodes were tried out, from a range of two nodes (1 main and 1 worker node) to 16 nodes (1 main and 15 worker nodes). The execution time was the following:
+
+| Nodes      | Execution Time | Speed Up |
+| ----------- | ----------- | -------- |
+| 1      | 7.1552       | 1 |
+| 2      | 7.1788       | 0.997 |
+| 3      | 4.294       | 1.666 |
+| 4      | 3.567       | 2.006 |
+| 5      | 2.977       | 2.404 |
+| 6      | 2.442       | 2.931 |
+| 7      | 2.376       | 3.011 |
+| 8      | 2.287       | 3.129 |
+| 9      | 2.186       | 3.329 |
+| 10      | 2.033       | 3.473 |
+| 11      | 1.858       | 3.851 |
+| 12      | 1.827       | 3.915 |
+| 13      | 1.859       | 3.849 |
+| 14      | 1.859       | 3.848 |
+| 15      | 1.873       | 3.820 |
+| 16      | 1.876       | 3.813 |
+
+![Differential Expression Speedup](https://user-images.githubusercontent.com/5700807/117595278-03680180-b106-11eb-926d-f10423613ce2.png)
+
+Looking at the performance, this was exactly the speedup that we expected to see. Given the implementation of the application, were each cluster data is sent to a separate node, we expected to see an increase in the speedup when increasing the number of noes until the number of clusters was equal to the number of worker nodes used. In this case, there were 10 clusters in the data, so the maximum speed up was achieved when there were 10 worker nodes, i.e. 11 total nodes, as each node is assigned a single cluster. When we had 2 nodes, we could see that the performance was actually worse than that of the sequential process, and this is due to the overhead cost of setting up the MPI framework and the data transfer overhead. We could also see that when the number of nodes is bigger than the number of clusters, the speed up doesn't increase and actually slightly goes down, because there are nodes that actually end up doing no work and the increase in execution time is due to the increased overhead time of setting up the nodes.   
+
+
+### Performance Comparison
+Of the five steps in our data pipeline (preprocessing, clustering, visualization, differential expression analysis, data I/O), we worked on solutions to improve runtime in three of these steps. Successful performance gains were made in two of these steps: preprocessing and differential expression analysis. Although the clustering stage shows speedup on the small scale, it was not able to be applied to the full dataset, so it's runtime improvements will not be taken into consideration for the overall case. 
+
+The overall speedup for each stage from sequential to parallel can be observed in the following table:
+
+| Step in Data Pipeline      | Sequential Time (s) | Parallel Time (s) | Speed Up |
+| ----------- | ----------- | -------- | ------ |
+| Preprocessing  | 3088.9 | 5.44 | 567.81 |
+| Clustering     | 295.7| 295.7 | 1.00 |
+| Visualization  | 113.5| 113.5 | 1.00  |
+| Differential Expression Analysis  |7.15 | 1.87 | 3.82 |
+| Data I/O       | 495.8| 495.8 | 1.00 |
+
+These individual speedups resulted in an overall speedup to the system of 4.39.
+
+## Takeaways and Future Work
+---
+
+There were three major lessons learned throughout this experiment. Firstly, the lowest level operations need to be taken into consideration when parallelizing a task. It was not initially known how we were going to parallelize K-Means clustering, so in-depth analysis of the algorithm was required. Secondly, the transition from sequential code to parallel code is never as trivial as it may seem. Despite the many useful libraries and programming frameworks for moving sequential code to parallel code, it again requires knowing the granular details about the operations that are being made to the data. Where and how to apply these frameworks becomes complicated very quickly. Lastly, it has been critical to consider where and how data is stored, and how that data is accessed. Lots of time was spent moving the data to the compute instead of the other way around, which resulted in collective hours of waiting for data to upload.
+
+Changes that would be made to this experiment in the future are focused mainly around the clustering implementation. The clustering stage is the last step in this pipeline that can be readily changed by parallelization, so fixing the implementation such that it is compatible with the large-scale dataset would be an important change.
