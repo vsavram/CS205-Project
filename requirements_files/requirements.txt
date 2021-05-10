@@ -1,0 +1,9 @@
+matplotlib
+pandas
+numpy
+anndata
+sklearn
+scprep
+scanpy
+scipy
+argparse

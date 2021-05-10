@@ -5,6 +5,10 @@ import numpy as np
 import pandas as pd
 
 
+### raw_exp is an n x p matrix
+### gene_lengths is a vector of length p
+
+
 #---------------------------------------------------------------------------------------------------
 # Remove lowly expressed genes
 #---------------------------------------------------------------------------------------------------
@@ -33,13 +37,15 @@ def remove_lowly_expressed(raw_exp, perc_zero, gene_lengths):
 
 def gene_length_norm(raw_exp, gene_lengths):
     # Perform gene length normalization
-    raw_exp = raw_exp.div(gene_lengths.to_list(), axis=1)
+    for gene,gene_len in zip(raw_exp.columns,gene_lengths):
+        raw_exp[gene] = raw_exp[gene]/gene_len
     return raw_exp
 
 def sequencing_depth_norm(raw_exp):
     # Perform sequencing depth normalization
-    sequencing_depth = raw_exp.apply(lambda x: np.sum(x), axis=1)
-    raw_exp = raw_exp.div(sequencing_depth, axis=0)
+    for i in range(raw_exp.shape[0]):
+        sequencing_depth = sum(raw_exp.iloc[i,:])
+        raw_exp.iloc[i,:] = raw_exp.iloc[i,:]/sequencing_depth
     return raw_exp
 
 #---------------------------------------------------------------------------------------------------
@@ -47,6 +53,7 @@ def sequencing_depth_norm(raw_exp):
 #---------------------------------------------------------------------------------------------------
 
 def log_transform(raw_exp):
-    raw_exp = raw_exp*1e6
-    exp_data = np.log2(raw_exp + 1)    
-    return exp_data
+    for i in range(raw_exp.shape[0]):
+        for j in range(raw_exp.shape[1]):
+            raw_exp.iloc[i,j] = np.log2(raw_exp.iloc[i,j]*1e6 + 1)  
+    return raw_exp

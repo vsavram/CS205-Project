@@ -1,0 +1,3 @@
+pandas
+numpy
+mpi4py

@@ -48,7 +48,7 @@ if __name__ == "__main__":
     metadata = pd.read_csv(opts.metadata_path)
     metadata = metadata[['Assay', 'Sample Characteristic[disease]']]
     # Import the gene lengths
-    gene_lengths = pd.read_csv(opts.gene_length_path)['gene length']
+    gene_lengths = np.genfromtxt(opts.gene_length_path, delimiter=',')
     
     start_time = time.time()
     
@@ -86,10 +86,6 @@ if __name__ == "__main__":
 
     start_time = time.time()
 
-    exp_data.to_csv('exp_data.csv')
-    clusters_ = pd.DataFrame(clusters)
-    clusters_.to_csv('clusters.csv')
-
     # Perform differential expression analysis
     DE(exp_data, clusters, metadata)
     
@@ -100,4 +96,4 @@ if __name__ == "__main__":
     # Save the execution times for each component of the analysis
     execution_time_df = pd.DataFrame({'component': ['preprocessing', 'clustering', 'tsne', 'DE'], 
                                       'time (s)': [preprocessing_time, clustering_time, tsne_time, DE_time]})
-    execution_time_df.to_csv("sequential_execution_times.csv")
+    execution_time_df.to_csv("sequential_execution_times.csv", index=False)
