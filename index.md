@@ -29,7 +29,7 @@ Raw single-cell data is initially preprocessed, prepping it for downstream analy
 ## Data
 ---
 
-The data used to assess the performance and scalability of our programming model was taken from Y. Zheng et al 2020 and can be found [here](https://www.ncbi.nlm.nih.gov/pmc/articles/PMC7417788/). Samples are taken from human blood. The dataset is advantageous to work with because human blood is comprised of a diverse set of immune cells, many of which are well documented. We show that our programming model handles a heterogenous dataset as is typically found when working with single-cell data. The dataset is in tabular form, spanning 30,000 cells (rows) and 20,896 genes (columns). Samples were taken from patients who were infected with COVID-19 and from healthy donors. Associated data files include the cell metadata, indicating whether a given cell came from a COVID-19 infected patient or from a healthy donor, and a file containing the gene lengths for the 20,896 genes. 
+The data used to assess the performance and scalability of our programming model was taken from Y. Zheng et al 2020 and can be found [here](https://www.ncbi.nlm.nih.gov/pmc/articles/PMC7417788/) [1]. Samples are taken from human blood. The dataset is advantageous to work with because human blood is comprised of a diverse set of immune cells, many of which are well documented. We show that our programming model handles a heterogenous dataset as is typically found when working with single-cell data. The dataset is in tabular form, spanning 30,000 cells (rows) and 20,896 genes (columns). Samples were taken from patients who were infected with COVID-19 and from healthy donors. Associated data files include the cell metadata, indicating whether a given cell came from a COVID-19 infected patient or from a healthy donor, and a file containing the gene lengths for the 20,896 genes. 
 
 ## Hybrid Parallelization Programming Model
 ---
@@ -173,14 +173,14 @@ The execution times for each module in the single-cell analysis pipeline using t
 
 The total execution time, not taking into account data I/O is 3505.3837 seconds (roughly 58 minutes). The run time taking into account I/O is 4001.2578 seconds (67 minutes).
 
-We treat tSNE visualization as an inherently sequential portion of the code. The proportion of the code that can be parallelized is $c = \frac{3088.9105 + 295.7333 + 7.1552}{3505.3837} = 0.9675$. The theoretical speedup as a function of the number of processors governed by Amdahl's law is given below. 
-$$
-S_T(1,p) = \frac{1}{1 - c + c/p} = \frac{1}{0.0324 + 0.9675/p}
-$$
-If taking into account I/O, the proportion of code that can be parallelized is $c = \frac{3088.9105 + 295.7333 + 7.1552}{4001.2578} = 0.8476$. The theoretical speedup as a function of the number of processors governed by Amdahl's law is given below.
-$$
-S_T(1,p) = \frac{1}{1 - c + c/p} = \frac{1}{0.1524 + 0.8476/p}
-$$
+We treat tSNE visualization as an inherently sequential portion of the code. The proportion of the code that can be parallelized is *c* and the expression for the the theoretical speedup *S<sub>T</sub>(1,p)* as a function of the number of processors *p* as dictated by Amdahl's law is given below. 
+![Screen Shot 2021-05-10 at 10 34 11 AM](https://user-images.githubusercontent.com/29682604/117676275-63e55600-b17b-11eb-9dad-5435fdb88fa9.png)
+
+If taking into account I/O, the proportion of the code that can be parallelized is *c* and the expression for the the theoretical speedup *S<sub>T</sub>(1,p)* as a function of the number of processors *p* as dictated by Amdahl's law is given below. 
+![Screen Shot 2021-05-10 at 10 36 10 AM](https://user-images.githubusercontent.com/29682604/117676459-91320400-b17b-11eb-82f6-cc8addbc4d27.png)
+
+We see that when ignoring data I/O, we can get sizeable return in speedup up to roughly 80 processors, after which we begin to realize diminishing returns in performance. However, if data I/O is taken into account, diminishing returns are realized much more rapidly. After roughly 15 to 20 processors, the performance increases are supposedly marginal.
+
 ![Theoretical_Speedup_with_IO](https://user-images.githubusercontent.com/29682604/117601460-78463600-b11c-11eb-9756-c81ec3b3ee6f.png)
 
 ### Preprocessing Performance
@@ -193,7 +193,7 @@ The PySpark implementation for the preprocessing steps was not amenable for the 
 <u>Numba:</u>
 
 The preprocessing implemented using Numba produced large speedups. The Numba preprocessing implementation was run on an AWS m5.2xlarge instance with 8 vCPU's with an execution time of 8.6836 seconds. The Numba preprocessing implementation was also run on an AWS m5.4xlarge instance with 16 vCPU's with an execution time of 6.4418 seconds. These execution times correspond to speedups of 356 and 480 respectively.
-**Benefits over the Spark framework** The implementation using Numba used a shared memory framework, avoiding overheads associated with data transfer and communication across nodes. 
+**Benefits over the Spark framework** The implementation using Numba used a shared memory framework, avoiding overheads associated with data transfer and communication across nodes. Furthermore, Numba automatically detects the given machines CPU availability and allocates tasks to cores using an optimal scheme. However, Numba comes with some drawbacks. For example, functions must work on numerics and cannot work with strings or boolean expressions. While this was not an impediment for this use case, this drawback might pose a problem when being used in another context. 
 
 
 ### Cell Clustering Performance
@@ -251,4 +251,8 @@ These individual speedups resulted in an overall speedup to the system of 4.39.
 
 There were three major lessons learned throughout this experiment. Firstly, the lowest level operations need to be taken into consideration when parallelizing a task. It was not initially known how we were going to parallelize K-Means clustering, so in-depth analysis of the algorithm was required. Secondly, the transition from sequential code to parallel code is never as trivial as it may seem. Despite the many useful libraries and programming frameworks for moving sequential code to parallel code, it again requires knowing the granular details about the operations that are being made to the data. Where and how to apply these frameworks becomes complicated very quickly. Lastly, it has been critical to consider where and how data is stored, and how that data is accessed. Lots of time was spent moving the data to the compute instead of the other way around, which resulted in collective hours of waiting for data to upload.
 
-Changes that would be made to this experiment in the future are focused mainly around the clustering implementation. The clustering stage is the last step in this pipeline that can be readily changed by parallelization, so fixing the implementation such that it is compatible with the large-scale dataset would be an important change.
+Changes that would be made to this experiment in the future are focused mainly around the clustering implementation. The clustering stage is the last step in this pipeline that can be readily changed by parallelization, so fixing the implementation such that it is compatible with the large-scale dataset would be an important change. We would also like to increase the speedup achieved on the preprocessing step. Numba allows both CPU and GPU acceleration. While we focused on CPU acceleration for our implementation, utiliziing GPU's could better preprocessing performance. The overhead associated with data transfer between CPU and GPU would likely be mitigated by the performance increase on compute intensize operations across the expression matrix, but actual implementations across multiple problem sizes are needed in order to verify this claim.
+
+## References
+---
+[1] Zheng Y, Liu X, Le W, et al. A human circulating immune cell landscape in aging and COVID-19. Protein & Cell. 2020 Oct;11(10):740-770. DOI: 10.1007/s13238-020-00762-2.
