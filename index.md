@@ -51,6 +51,8 @@ Numba is a compiler for Python that specifically works with numerical functions 
 
 ### Differential Expression Analysis with MPI
 
+The MPI programming model allows different nodes in a cluster to communicate with each other through a 'message passing interface', where data can be shared, distributed and collected throughout the different computing nodes to allow computations to be carried out to different chunks of data at different nodes, and thus achieve parallelization. For the differential expression analysis, a statistical analysis, in this case a rank sum test, is performed independently for each cluster of genes to determine if there is a statistical difference in gene expression in the control and study group in that particular cluster. This leads to a natural integration to the MPI programming model, where a main node will send one cluster data to each node so the rank sum tests of each cluster can be performed parallelly.
+
 ## Runing the Model and Reproducibility Information
 ---
 
@@ -118,7 +120,18 @@ Dependencies:
 Numba preprocessing can be run using the following command where --raw_data_path specifies the path to the raw cells by genes expression matrix, --metadata_path specifies the path to the metadata file containing cell-specific metadata, and --gene_length_path specifies the path to the file containing the gene lengths.
 > $ ./preprocessing_numba.py --raw_data_path 'Data/covid_counts.csv' --metadata_path 'Data/metadata.csv' --gene_length_path 'Data/gene_lengths.csv'
 
-The execution time is printed to the console. 
+The execution time is printed to the console.
+
+### Differential Expression Analysis with MPI
+**Reproducibility Information:** The MPI cluster was set up with AWS, using 16 nodes, each with an Ubuntu Server 18.04 LTS (HVM) image, EBS General Purpose (SSD) Volume Type and the instance type m4.xlarge. This instance has 4 Intel(R) Xeon(R) CPU E5-2686 v4 @ 2.30GHz, 2 cores per socket with 2 thread per core, and a Xen hipervisor, 16 GB of disk space and cache storages of: L1d cache 32K, L1i cache 32K, L2 cache 256K, L3 cache 46080K. We are using a VPC to create the cluster and the connections made are private.
+
+The MPI version being used in all nodes is the HYDRA build 3.3a2, which is using gcc -Wl,-Bsymbolic-functions -Wl,-z,relro. The Python version used is in all nodes is 2.7.17.
+
+Dependencies (all nodes):
+* pandas 
+* numpy 
+* scipy
+* mpi4py 
 
 ## Performance
 ---
