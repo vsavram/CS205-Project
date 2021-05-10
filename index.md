@@ -87,7 +87,7 @@ The following files must be in the same directory in order to execute the sequen
 * `DE_sequential.py`
 
 Sequential execution can be run using the following command where --raw_data_path specifies the path to the raw cells by genes expression matrix, --metadata_path specifies the path to the metadata file containing cell-specific metadata, and --gene_length_path specifies the path to the file containing the gene lengths.
-> $ ./run_sequential.py --raw_data_path 'Data/covid_filtered_counts_subset.csv' --metadata_path 'Data/metadata_subset.csv' --gene_length_path 'Data/gene_lengths.csv'
+> $ ./run_sequential.py  \-\-raw_data_path  'Data/covid_filtered_counts_subset.csv'  \-\-metadata_path  'Data/metadata_subset.csv'  \-\-gene_length_path  'Data/gene_lengths.csv'
 
 The execution times for each step of the preprocessing are printed to the console. The executions times are also saved to a file **sequential_execution_times.csv**.
 
@@ -105,6 +105,11 @@ The Spark version used is 2.2.0 \\
 The Python version used is 2.7.17. The following dependencies are required and can be installed by running the following command.
 > $ pip install -r requirements_pyspark.txt
 
+PySpark preprocessing can be run using the following command where --raw_data_path specifies the path to the raw cells by genes expression matrix, --metadata_path specifies the path to the metadata file containing cell-specific metadata, and --gene_length_path specifies the path to the file containing the gene lengths.
+> $ ./preprocessing_spark.py  \-\-raw_data_path  'Data/covid_counts.csv'  \-\-metadata_path  'Data/metadata.csv'  \-\-gene_length_path  'Data/gene_lengths.csv'
+
+The execution time is printed to the console.
+
 ### Numba Preprocessing
 
 **Reproducibility Information:** The shared memory Numba implementation of preprocessing was run on an m5.2xlarge AWS instance using the AMI \textbf{Ubuntu Server 20.04 LTS (HVM), SSD Volume Type}. The linux kernel version is 5.4.0-1038-aws. The instance has 8 vCPU's, 8 cores in total (i.e. 1 core per vCPU), 32 GiB of main memory, 32 K of L1d cache memory, 32 K of L1i cache memory, 256 K of L2 cache memory, and 46080 K of L3 cache memory. The CPU clock rate is 2.3 GHz. \\
@@ -120,7 +125,7 @@ Dependencies:
 * numba 
 
 Numba preprocessing can be run using the following command where --raw_data_path specifies the path to the raw cells by genes expression matrix, --metadata_path specifies the path to the metadata file containing cell-specific metadata, and --gene_length_path specifies the path to the file containing the gene lengths.
-> $ ./preprocessing_numba.py --raw_data_path 'Data/covid_counts.csv' --metadata_path 'Data/metadata.csv' --gene_length_path 'Data/gene_lengths.csv'
+> $ ./preprocessing_numba.py  \-\-raw_data_path  'Data/covid_counts.csv'  \-\-metadata_path  'Data/metadata.csv'  \-\-gene_length_path  'Data/gene_lengths.csv'
 
 The execution time is printed to the console.
 
