@@ -107,7 +107,6 @@ if __name__ == "__main__":
 
     import pandas as pd
     import time
-    import matplotlib.pyplot as plt
 
     # start MPI processes
     comm = MPI.COMM_WORLD
@@ -115,7 +114,6 @@ if __name__ == "__main__":
     mpi_size = comm.Get_size()
     
     exp_data = pd.read_csv("counts_small_test.csv",index_col=0)
-    exp_data.drop(['Unnamed: 0.1'],axis=1,inplace=True)
 
     start_time = time.time()
     centroids, classifications = K_Means_parallel(exp_data.values,
@@ -127,16 +125,4 @@ if __name__ == "__main__":
         print("\nExecution time: {}\n".format(end_time-start_time))
         print('Cluster sizes')
         print(['cluster {}: {}'.format(key,len(classifications[key])) for key in classifications.keys()])
-
-        show_plots = False # only works when data dimensionality is 2
-        if show_plots:
-            for centroid in centroids:
-                plt.scatter(centroids[centroid][0], centroids[centroid][1],
-                            marker="o", color="k")
-
-            for classification in classifications:
-                for featureset in classifications[classification]:
-                    plt.scatter(featureset[0], featureset[1], marker="x", color='b')
-
-            plt.show()
 
