@@ -93,7 +93,7 @@ The execution times for each step of the preprocessing are printed to the consol
 
 ### PySpark Preprocessing
 
-**Reproducibility Information:** The PySpark implemenation of preprocessing was run on a cluster of m5.2xlarge AWS instances using the AMI \textbf{Ubuntu Server 20.04 LTS (HVM), SSD Volume Type}. The linux kernel version is 5.4.0-1038-aws. The instance has 8 vCPU's, 8 cores in total (i.e. 1 core per vCPU), 32 GiB of main memory, 32 K of L1d cache memory, 32 K of L1i cache memory, 256 K of L2 cache memory, and 46080 K of L3 cache memory. The CPU clock rate is 2.3 GHz. \\
+**Reproducibility Information:** The PySpark implemenation of preprocessing was run on a cluster of m5.2xlarge AWS instances using the AMI **Ubuntu Server 20.04 LTS (HVM), SSD Volume Type**. The linux kernel version is 5.4.0-1038-aws. The instance has 8 vCPU's, 8 cores in total (i.e. 1 core per vCPU), 32 GiB of main memory, 32 K of L1d cache memory, 32 K of L1i cache memory, 256 K of L2 cache memory, and 46080 K of L3 cache memory. The CPU clock rate is 2.3 GHz. \\
 By default, the m5.2xlarge instance has 8 G of disk space. Given that m5 intances are back by EBS, the disk space can by dynamically resized. Resizing was not needed for this execution. \\
 Up to 8 nodes were used for this implementation. The network bandwidth is up to 10 Gbps. 
 
@@ -112,8 +112,9 @@ The execution time is printed to the console.
 
 ### Numba Preprocessing
 
-**Reproducibility Information:** The shared memory Numba implementation of preprocessing was run on an m5.2xlarge AWS instance using the AMI \textbf{Ubuntu Server 20.04 LTS (HVM), SSD Volume Type}. The linux kernel version is 5.4.0-1038-aws. The instance has 8 vCPU's, 8 cores in total (i.e. 1 core per vCPU), 32 GiB of main memory, 32 K of L1d cache memory, 32 K of L1i cache memory, 256 K of L2 cache memory, and 46080 K of L3 cache memory. The CPU clock rate is 2.3 GHz. \\
-By default, the m5.2xlarge instance has 8 G of disk space. Given that m5 intances are back by EBS, the disk space can by dynamically resized. Resizing was not needed for this execution.
+**Reproducibility Information:** The shared memory Numba implementation of preprocessing was run on an m5.2xlarge AWS instance using the AMI **Ubuntu Server 20.04 LTS (HVM), SSD Volume Type**. The linux kernel version is 5.4.0-1038-aws. The instance has 8 vCPU's, 8 cores in total (i.e. 1 core per vCPU), 32 GiB of main memory, 32 K of L1d cache memory, 32 K of L1i cache memory, 256 K of L2 cache memory, and 46080 K of L3 cache memory. The CPU clock rate is 2.3 GHz. \\
+The shared memory Numba implementation of preprocessing was also run on an m5.4xlarge AWS instance using the AMI **Ubuntu Server 20.04 LTS (HVM), SSD Volume Type**. The linux kernel version is 5.4.0-1038-aws. The instance has 16 vCPU's, 16 cores in total (i.e. 1 core per vCPU), 32 GiB of main memory, 32 K of L1d cache memory, 32 K of L1i cache memory, 256 K of L2 cache memory, and 46080 K of L3 cache memory. The CPU clock rate is 2.3 GHz. \\
+By default, the m5.2xlarge and m5.4xlarge instances has 8 G of disk space. Given that m5 intances are back by EBS, the disk space can by dynamically resized. Resizing was not needed for this execution.
 
 The Python version used is 2.7.17. The following dependencies are required and can be installed by running the following command.
 > $ pip install -r requirements_numba.txt
