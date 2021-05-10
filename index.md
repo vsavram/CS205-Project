@@ -45,7 +45,7 @@ The Spark programming model is used to optimize data preprocessing. Specifically
 
 ### Preprocessing Optimization with Numba
 
-Numba is a compiler for Python that specifically works with numerical functions to accelerate computing. Numba uses the LLVM compiler architecture to perform this optimization. THe just-in-time translation of a given function (the bytecode is translated to machine code just before execution), causes improved execution speeds. Numba is used to peform this preprocessing optimzation. Furthermore, Numba is also used as a shared memory multi-threading framework, able to provide local parallelism. 
+Numba is a compiler for Python that specifically works with numerical functions to accelerate computing. Numba uses the LLVM compiler architecture to perform this optimization. THe just-in-time translation of a given function (the bytecode is translated to machine code just before execution), causes improved execution speeds. Numba is used to peform this preprocessing optimzation. Furthermore, Numba is also used as a shared memory multi-threading framework, able to provide local parallelism. With a fine-grained shared memory approach, we can circumvent the overhead associated with distsributed models that require communication and synchronization across nodes. 
 
 ### Cell Clustering with MPI
 
@@ -86,8 +86,8 @@ The following files must be in the same directory in order to execute the sequen
 * `create_tsne.py`
 * `DE_sequential.py`
 
-Sequential execution can be run using the following command where --raw_data_path specifies the path to the raw cells by genes expression matrix, --metadata_path specifies the path to the metadata file containing cell-specific metadata, and --gene_length_path specifies the path to the file containing the gene lengths.
-> $ ./run_sequential.py  \-\-raw_data_path  'Data/covid_filtered_counts_subset.csv'  \-\-metadata_path  'Data/metadata_subset.csv'  \-\-gene_length_path  'Data/gene_lengths.csv'
+Sequential execution can be run using the following command where `--`raw_data_path specifies the path to the raw cells by genes expression matrix, `--`metadata_path specifies the path to the metadata file containing cell-specific metadata, and `--`gene_length_path specifies the path to the file containing the gene lengths.
+> $ ./run_sequential.py  `--`raw_data_path  'Data/covid_filtered_counts_subset.csv'  `--`metadata_path  'Data/metadata_subset.csv'  `--`gene_length_path  'Data/gene_lengths.csv'
 
 The execution times for each step of the preprocessing are printed to the console. The executions times are also saved to a file **sequential_execution_times.csv**.
 
@@ -105,8 +105,8 @@ The Spark version used is 2.2.0 \\
 The Python version used is 2.7.17. The following dependencies are required and can be installed by running the following command.
 > $ pip install -r requirements_pyspark.txt
 
-PySpark preprocessing can be run using the following command where --raw_data_path specifies the path to the raw cells by genes expression matrix, --metadata_path specifies the path to the metadata file containing cell-specific metadata, and --gene_length_path specifies the path to the file containing the gene lengths.
-> $ ./preprocessing_spark.py  \-\-raw_data_path  'Data/covid_counts.csv'  \-\-metadata_path  'Data/metadata.csv'  \-\-gene_length_path  'Data/gene_lengths.csv'
+PySpark preprocessing can be run using the following command where `--`raw_data_path specifies the path to the raw cells by genes expression matrix, `--`metadata_path specifies the path to the metadata file containing cell-specific metadata, and `--`gene_length_path specifies the path to the file containing the gene lengths.
+> $ ./preprocessing_spark.py  `--`raw_data_path  'Data/covid_counts.csv'  `--`metadata_path  'Data/metadata.csv'  `--`gene_length_path  'Data/gene_lengths.csv'
 
 The execution time is printed to the console.
 
@@ -124,8 +124,8 @@ Dependencies:
 * argparse
 * numba 
 
-Numba preprocessing can be run using the following command where --raw_data_path specifies the path to the raw cells by genes expression matrix, --metadata_path specifies the path to the metadata file containing cell-specific metadata, and --gene_length_path specifies the path to the file containing the gene lengths.
-> $ ./preprocessing_numba.py  \-\-raw_data_path  'Data/covid_counts.csv'  \-\-metadata_path  'Data/metadata.csv'  \-\-gene_length_path  'Data/gene_lengths.csv'
+Numba preprocessing can be run using the following command where `--`raw_data_path specifies the path to the raw cells by genes expression matrix, `--`metadata_path specifies the path to the metadata file containing cell-specific metadata, and `--`gene_length_path specifies the path to the file containing the gene lengths.
+> $ ./preprocessing_numba.py  `--`raw_data_path  'Data/covid_counts.csv'  `--`metadata_path  'Data/metadata.csv'  `--`gene_length_path  'Data/gene_lengths.csv'
 
 The execution time is printed to the console.
 
@@ -173,11 +173,11 @@ The execution times for each module in the single-cell analysis pipeline using t
 
 The total execution time, not taking into account data I/O is 3505.3837 seconds (roughly 58 minutes). The run time taking into account I/O is 4001.2578 seconds (67 minutes).
 
-We treat tSNE visualization as an inherently sequential portion of the code. The proportion of the code that can be parallelized is $c = \frac{3088.9105 + 295.7333 + 7.1552}{3505.3837} = 0.9675. The theoretical speedup as a function of the number of processors governed by Amdahl's law is given below. 
+We treat tSNE visualization as an inherently sequential portion of the code. The proportion of the code that can be parallelized is $c = \frac{3088.9105 + 295.7333 + 7.1552}{3505.3837} = 0.9675$. The theoretical speedup as a function of the number of processors governed by Amdahl's law is given below. 
 $$
 S_T(1,p) = \frac{1}{1 - c + c/p} = \frac{1}{0.0324 + 0.9675/p}
 $$
-If taking into account I/O, the proportion of code that can be parallelized is $c = \frac{3088.9105 + 295.7333 + 7.1552}{4001.2578} = 0.8476. The theoretical speedup as a function of the number of processors governed by Amdahl's law is given below.
+If taking into account I/O, the proportion of code that can be parallelized is $c = \frac{3088.9105 + 295.7333 + 7.1552}{4001.2578} = 0.8476$. The theoretical speedup as a function of the number of processors governed by Amdahl's law is given below.
 $$
 S_T(1,p) = \frac{1}{1 - c + c/p} = \frac{1}{0.1524 + 0.8476/p}
 $$
