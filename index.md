@@ -185,7 +185,8 @@ $$
 The PySpark implementation for the preprocessing steps was not amenable for the types of operations being performed on the raw expression data. 
 **Challenges** Spark (and by extension PySpark) requires data manipulation of a specific format. The preprocessing steps involve column removal, column-wise and row-wise operations, and transformations on the entire matrix. At certain points in preprocessing, the collection of data represented by the method `collect()` (e.g. column names or index names) is unavoidable. Collecting elements from an RDD (or PySpark Dataframe which is a wrapped RDD), causes data to be sent back to the master node. Repeated data transfer inhibits PySpark's ability to be used as a viable means of big data flow preprocessing in this context.
 
-<u>Numba</u>
+<u>Numba:</u>
+
 The preprocessing implemented using Numba produced large speedups. The Numba preprocessing implementation was run on an AWS m5.2xlarge instance with 8 vCPU's with an execution time of 8.6836 seconds. The Numba preprocessing implementation was also run on an AWS m5.4xlarge instance with 16 vCPU's with an execution time of 6.4418 seconds. These execution times correspond to speedups of 356 and 480 respectively.
 **Benefits over the Spark framework** The implementation using Numba used a shared memory framework, avoiding overheads associated with data transfer and communication across nodes. 
 
