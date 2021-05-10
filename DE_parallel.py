@@ -16,7 +16,7 @@ def DE():
 
     if rank == 0:
         exp_data = pd.read_csv('exp_data.csv', index_col='Unnamed: 0')
-        metadata = pd.read_csv('metadata.tsv', index_col='Unnamed: 0')
+        metadata = pd.read_csv('metadata.csv', index_col='Unnamed: 0')
         clusters = pd.read_csv('clusters.csv', index_col='Unnamed: 0')
 
         # Cluster array

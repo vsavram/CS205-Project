@@ -86,6 +86,10 @@ if __name__ == "__main__":
 
     start_time = time.time()
 
+    exp_data.to_csv('exp_data.csv')
+    clusters_ = pd.DataFrame(clusters)
+    clusters_.to_csv('clusters.csv')
+
     # Perform differential expression analysis
     DE(exp_data, clusters, metadata)
     
