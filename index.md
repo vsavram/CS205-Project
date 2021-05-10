@@ -106,7 +106,10 @@ The Python version used is 2.7.17. The following dependencies are required and c
 > $ pip install -r requirements_pyspark.txt
 
 PySpark preprocessing can be run using the following command where `--`raw_data_path specifies the path to the raw cells by genes expression matrix, `--`metadata_path specifies the path to the metadata file containing cell-specific metadata, and `--`gene_length_path specifies the path to the file containing the gene lengths.
-> $ ./preprocessing_spark.py  `--`raw_data_path  'Data/covid_counts.csv'  `--`metadata_path  'Data/metadata.csv'  `--`gene_length_path  'Data/gene_lengths.csv'
+> $ spark-submit preprocessing_spark.py  `--`raw_data_path  'Data/covid_counts.csv'  `--`metadata_path  'Data/metadata.csv'  `--`gene_length_path  'Data/gene_lengths.csv'
+
+Additionally, the `--`num-executors and `--`executor-cores arguments can be used to specify the number of worker nodes used and the number of cores per node used for execution. An example is given below.
+> $ spark-submit preprocessing_spark.py  --num-executors 2 --executor-cores 4  `--`raw_data_path  'Data/covid_counts.csv'  `--`metadata_path  'Data/metadata.csv'  `--`gene_length_path  'Data/gene_lengths.csv'
 
 The execution time is printed to the console.
 
@@ -140,6 +143,9 @@ Dependencies (all nodes):
 * numpy 
 * mpi4py
 
+The Python version used is 2.7.17. The dependencies can be installed by running the following command.
+> $ pip install -r requirements_clustering_mpi.txt
+
 To execute the parallel implementation of K-Means based cell clustering, you can use the command
 > $ mpiexec -n NUM_NODES python clustering_parallel.py
 
@@ -155,6 +161,9 @@ Dependencies (all nodes):
 * numpy 
 * scipy
 * mpi4py
+
+The Python version used is 2.7.17. The dependencies can be installed by running the following command.
+> $ pip install -r requirements_DE_mpi.txt
 
 To execute the parallel implementation of the Differential Expression Analysis, you can use the command
 > $ mpiexec -n NUM_NODES python DE_parallel.py
